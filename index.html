@@ -5,21 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Trading Journal</title>
 
-  <!-- Chart.js for equity curve -->
+  <!-- Chart.js (no time adapter needed; we use category x-axis) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
       --bg:#0b1220;
       --card:#111a2e;
-      --card2:#0f172a;
       --text:#e7edf7;
       --muted:#9fb0c7;
       --border:rgba(255,255,255,.10);
       --good:#3bd671;
       --bad:#ff4d5e;
       --warn:#ffd36a;
-      --chip:#1b2642;
     }
     *{box-sizing:border-box}
     body{
@@ -35,16 +33,14 @@
     h1{font-size:22px;margin:0 0 6px 0}
     .sub{color:var(--muted);font-size:13px;line-height:1.35}
     .pill{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.06);border:1px solid var(--border);padding:8px 10px;border-radius:999px;color:var(--muted);font-size:12px}
+    .dot{width:10px;height:10px;border-radius:50%}
+    .dot.g{background:rgba(59,214,113,.9)}
+    .dot.r{background:rgba(255,77,94,.9)}
+    .dot.n{background:rgba(255,255,255,.35)}
 
     .grid{display:grid;gap:12px}
     .g2{grid-template-columns: 1.2fr .8fr}
-    .g3{grid-template-columns: repeat(3, 1fr)}
-    .g4{grid-template-columns: repeat(4, 1fr)}
-    @media (max-width: 1000px){
-      .g2{grid-template-columns: 1fr}
-      .g4{grid-template-columns: repeat(2,1fr)}
-      .g3{grid-template-columns: 1fr}
-    }
+    @media (max-width: 1000px){ .g2{grid-template-columns: 1fr} }
 
     .card{
       background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
@@ -59,6 +55,41 @@
       color:#dbe7ff;
       display:flex;align-items:center;justify-content:space-between;gap:10px
     }
+
+    .controls{
+      display:grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap:10px;
+    }
+    @media(max-width:1000px){ .controls{grid-template-columns: repeat(2, 1fr)} }
+    .field label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+    .field input, .field select{
+      width:100%;
+      background:rgba(0,0,0,.22);
+      border:1px solid var(--border);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 10px;
+      outline:none;
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:10px 12px;border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
+      user-select:none;
+      font-weight:600;
+    }
+    .btn:hover{background:rgba(255,255,255,.10)}
+    .btn.primary{background:rgba(59,214,113,.14);border-color:rgba(59,214,113,.30)}
+    .btn.danger{background:rgba(255,77,94,.14);border-color:rgba(255,77,94,.30)}
+    .tiny{font-size:12px}
+    .smallNote{font-size:12px;color:var(--muted);margin-top:6px}
+    .error{color:var(--warn)}
+
     .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
     @media (max-width: 1000px){ .kpis{grid-template-columns:repeat(2,1fr)} }
     .kpi{
@@ -74,48 +105,12 @@
     .pos{color:var(--good)}
     .neg{color:var(--bad)}
     .muted{color:var(--muted)}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .controls{
-      display:grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap:10px;
-    }
-    @media(max-width:1000px){
-      .controls{grid-template-columns: repeat(2, 1fr)}
-    }
-    .field label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
-    .field input, .field select{
-      width:100%;
-      background:rgba(0,0,0,.22);
-      border:1px solid var(--border);
-      color:var(--text);
-      border-radius:12px;
-      padding:10px 10px;
-      outline:none;
-    }
-    .btn{
-      display:inline-flex;align-items:center;justify-content:center;
-      padding:10px 12px;border-radius:12px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      cursor:pointer;
-      user-select:none;
-      font-weight:600;
-    }
-    .btn:hover{background:rgba(255,255,255,.10)}
-    .btn.primary{background:rgba(59,214,113,.14);border-color:rgba(59,214,113,.30)}
-    .btn.danger{background:rgba(255,77,94,.14);border-color:rgba(255,77,94,.30)}
-    .tiny{font-size:12px}
+    .foot{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.4}
 
     /* Calendar */
     .calHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
     .calTitle{font-weight:800}
-    .calGrid{
-      display:grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap:10px;
-    }
+    .calGrid{display:grid;grid-template-columns: repeat(7, 1fr);gap:10px}
     .dow{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
     .day{
       border-radius:14px;
@@ -140,10 +135,6 @@
       border:1px solid var(--border);
       padding:8px 10px;border-radius:999px;color:var(--muted);font-size:12px
     }
-    .dot{width:10px;height:10px;border-radius:50%}
-    .dot.g{background:rgba(59,214,113,.9)}
-    .dot.r{background:rgba(255,77,94,.9)}
-    .dot.n{background:rgba(255,255,255,.35)}
 
     /* Table */
     table{width:100%;border-collapse:separate;border-spacing:0}
@@ -173,762 +164,782 @@
     }
     .tag.buy{border-color:rgba(59,214,113,.35);background:rgba(59,214,113,.10);color:#dff7e7}
     .tag.sell{border-color:rgba(255,77,94,.35);background:rgba(255,77,94,.10);color:#ffe1e4}
-
     .right{text-align:right}
-    .foot{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.4}
-    .error{color:#ffd36a}
-    .smallNote{font-size:12px;color:var(--muted);margin-top:6px}
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>Trading Journal</h1>
-        <div class="sub">
-          Google Sheets powered journal: Performance dashboard, P&amp;L calendar, and trade log.
-        </div>
-      </div>
-      <div class="pill">
-        <span id="statusDot" class="dot n"></span>
-        <span id="statusText">Not loaded</span>
-      </div>
-    </header>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Trading Journal</h1>
+      <div class="sub">Google Sheets powered journal: Performance dashboard, P&amp;L calendar, and trade log.</div>
+    </div>
+    <div class="pill">
+      <span id="statusDot" class="dot n"></span>
+      <span id="statusText">Not loaded</span>
+    </div>
+  </header>
 
-    <div class="card" style="margin-bottom:12px">
+  <div class="card" style="margin-bottom:12px">
+    <h2>
+      Filters
+      <span class="tiny muted" id="loadedInfo"></span>
+    </h2>
+
+    <div class="controls">
+      <div class="field">
+        <label>Start date</label>
+        <input id="fStart" type="date" />
+      </div>
+      <div class="field">
+        <label>End date</label>
+        <input id="fEnd" type="date" />
+      </div>
+      <div class="field">
+        <label>Symbol</label>
+        <select id="fSymbol"></select>
+      </div>
+      <div class="field">
+        <label>Side</label>
+        <select id="fSide">
+          <option value="ALL">All</option>
+          <option value="buy">Buy</option>
+          <option value="sell">Sell</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Group P&amp;L by</label>
+        <select id="fGroupBy">
+          <option value="close">Close date</option>
+          <option value="open">Open date</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Search trades</label>
+        <input id="fSearch" type="text" placeholder="ticket, symbol, reason..." />
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" id="btnReload">Reload from Google Sheet</button>
+      <button class="btn" id="btnThisMonth">This month</button>
+      <button class="btn" id="btnYTD">Year to date</button>
+      <button class="btn danger" id="btnClear">Clear filters</button>
+    </div>
+
+    <div class="smallNote">Tip: If loading fails, set the Sheet to “Anyone with the link can view”.</div>
+    <div class="smallNote error" id="errorBox" style="display:none"></div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
       <h2>
-        Filters
-        <span class="tiny muted" id="loadedInfo"></span>
+        Performance Dashboard
+        <span class="tiny muted" id="rangeLabel"></span>
       </h2>
-
-      <div class="controls">
-        <div class="field">
-          <label>Start date</label>
-          <input id="fStart" type="date" />
-        </div>
-        <div class="field">
-          <label>End date</label>
-          <input id="fEnd" type="date" />
-        </div>
-        <div class="field">
-          <label>Symbol</label>
-          <select id="fSymbol"></select>
-        </div>
-        <div class="field">
-          <label>Side</label>
-          <select id="fSide">
-            <option value="ALL">All</option>
-            <option value="buy">Buy</option>
-            <option value="sell">Sell</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Group P&amp;L by</label>
-          <select id="fGroupBy">
-            <option value="close">Close date</option>
-            <option value="open">Open date</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Search trades</label>
-          <input id="fSearch" type="text" placeholder="ticket, symbol, reason..." />
-        </div>
-      </div>
-
-      <div class="row" style="margin-top:10px">
-        <button class="btn primary" id="btnReload">Reload from Google Sheet</button>
-        <button class="btn" id="btnThisMonth">This month</button>
-        <button class="btn" id="btnYTD">Year to date</button>
-        <button class="btn danger" id="btnClear">Clear filters</button>
-      </div>
-
-      <div class="smallNote">
-        Tip: If loading fails, check the Sheet sharing is “Anyone with the link can view”.
-      </div>
-      <div class="smallNote error" id="errorBox" style="display:none"></div>
+      <div class="kpis" id="kpiGrid"></div>
+      <div class="foot">Metrics are computed from filtered trades. Drawdown is based on cumulative P&amp;L (not account balance).</div>
     </div>
 
-    <div class="grid g2">
-      <div class="card">
-        <h2>
-          Performance Dashboard
-          <span class="tiny muted" id="rangeLabel"></span>
-        </h2>
-
-        <div class="kpis" id="kpiGrid"></div>
-
-        <div class="foot">
-          Metrics are computed from filtered trades. Drawdown is based on cumulative P&amp;L (not account balance).
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Equity Curve (Cumulative P&amp;L)</h2>
-        <canvas id="equityChart" height="160"></canvas>
-      </div>
-    </div>
-
-    <div class="grid g2" style="margin-top:12px">
-      <div class="card">
-        <h2>
-          P&amp;L Calendar
-          <span class="tiny muted" id="calHint"></span>
-        </h2>
-
-        <div class="calHead">
-          <button class="btn" id="calPrev">◀</button>
-          <div class="calTitle" id="calTitle">—</div>
-          <button class="btn" id="calNext">▶</button>
-        </div>
-
-        <div class="calGrid" id="calDow"></div>
-        <div class="calGrid" id="calGrid"></div>
-
-        <div class="legend">
-          <span class="chip"><span class="dot g"></span> Profit day</span>
-          <span class="chip"><span class="dot r"></span> Loss day</span>
-          <span class="chip"><span class="dot n"></span> No trades</span>
-          <span class="chip">Click a day to filter that date</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Trade Log</h2>
-        <div style="max-height:520px;overflow:auto;border:1px solid var(--border);border-radius:14px">
-          <table id="tradeTable">
-            <thead>
-              <tr>
-                <th data-k="closeDate">Close</th>
-                <th data-k="ticket">Ticket</th>
-                <th data-k="symbol">Symbol</th>
-                <th data-k="type">Side</th>
-                <th data-k="lots" class="right">Lots</th>
-                <th data-k="openPrice" class="right">Open</th>
-                <th data-k="closePrice" class="right">Close</th>
-                <th data-k="profit" class="right">P&amp;L (USD)</th>
-                <th data-k="holdMin" class="right">Hold (min)</th>
-                <th data-k="reason">Reason</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="foot" id="tableFoot"></div>
+    <div class="card">
+      <h2>Equity Curve (Cumulative P&amp;L)</h2>
+      <div style="height:240px">
+        <canvas id="equityChart"></canvas>
       </div>
     </div>
   </div>
 
-  <script>
-    // =========================
-    // CONFIG (EDIT HERE)
-    // =========================
-    const CONFIG = {
-      sheetId: "1IDGWbLnStYdqna6_ESgfskIp3M701ZC-N-wYJtkjmyo",
-      gid: "1039898344",
+  <div class="grid g2" style="margin-top:12px">
+    <div class="card">
+      <h2>
+        P&amp;L Calendar
+        <span class="tiny muted" id="calHint"></span>
+      </h2>
 
-      // Expected columns (case-insensitive match):
-      // ticket, opening_time_utc, closing_time_utc, type, lots, symbol,
-      // opening_price, closing_price, profit_usd, commission_usd, swap_usd, close_reason
-      // If your sheet has different names, rename the header row to match.
-      currency: "USD",
+      <div class="calHead">
+        <button class="btn" id="calPrev">◀</button>
+        <div class="calTitle" id="calTitle">—</div>
+        <button class="btn" id="calNext">▶</button>
+      </div>
 
-      // Calendar: how to color intensity
-      pnlColorScale: { strong: 400, max: 1200 } // adjust for your P&L size
-    };
+      <div class="calGrid" id="calDow"></div>
+      <div class="calGrid" id="calGrid"></div>
 
-    // =========================
-    // Helpers
-    // =========================
-    const $ = (id) => document.getElementById(id);
-    const fmtMoney = (v) => {
-      const n = Number(v || 0);
-      const sign = n < 0 ? "-" : "";
-      const abs = Math.abs(n);
-      return `${sign}$${abs.toFixed(2)}`;
-    };
-    const fmtNum = (v, d=2) => {
-      const n = Number(v || 0);
-      return n.toFixed(d);
-    };
-    const toDateOnly = (d) => {
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const dd = String(d.getDate()).padStart(2,"0");
-      return `${yyyy}-${mm}-${dd}`;
-    };
-    const parseDate = (v) => {
-      // Accept ISO strings like 2026-03-05T08:58:18.952000
-      if (!v) return null;
-      const d = new Date(v);
-      if (!isNaN(d.getTime())) return d;
+      <div class="legend">
+        <span class="chip"><span class="dot g"></span> Profit day</span>
+        <span class="chip"><span class="dot r"></span> Loss day</span>
+        <span class="chip"><span class="dot n"></span> No trades</span>
+        <span class="chip">Click a day to filter that date</span>
+      </div>
+    </div>
 
-      // Fallback: try replacing space
-      const d2 = new Date(String(v).replace(" ", "T"));
+    <div class="card">
+      <h2>Trade Log</h2>
+      <div style="max-height:520px;overflow:auto;border:1px solid var(--border);border-radius:14px">
+        <table id="tradeTable">
+          <thead>
+          <tr>
+            <th data-k="closeDate">Close</th>
+            <th data-k="ticket">Ticket</th>
+            <th data-k="symbol">Symbol</th>
+            <th data-k="type">Side</th>
+            <th data-k="lots" class="right">Lots</th>
+            <th data-k="openPrice" class="right">Open</th>
+            <th data-k="closePrice" class="right">Close</th>
+            <th data-k="profit" class="right">P&amp;L (USD)</th>
+            <th data-k="holdMin" class="right">Hold (min)</th>
+            <th data-k="reason">Reason</th>
+          </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="foot" id="tableFoot"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // =========================
+  // CONFIG (ready for your link)
+  // =========================
+  const CONFIG = {
+    sheetId: "1IDGWbLnStYdqna6_ESgfskIp3M701ZC-N-wYJtkjmyo",
+    gid: "1039898344",
+    currency: "USD",
+
+    // Total P&L calculation:
+    // net = profit_usd + swap_usd + commission_usd
+    // (This matches your columns)
+  };
+
+  // =========================
+  // Helpers
+  // =========================
+  const $ = (id) => document.getElementById(id);
+
+  const fmtMoney = (v) => {
+    const n = Number(v || 0);
+    const sign = n < 0 ? "-" : "";
+    const abs = Math.abs(n);
+    return `${sign}$${abs.toFixed(2)}`;
+  };
+  const fmtNum = (v, d=2) => Number(v || 0).toFixed(d);
+
+  const toDateOnly = (d) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  // ✅ Robust parser for your sheet: supports "YYYY-MM-DD H:MM:SS" (hour can be 1 digit)
+  function parseDate(v){
+    if (v === null || v === undefined || v === "") return null;
+    if (v instanceof Date && !isNaN(v.getTime())) return v;
+
+    const s = String(v).trim();
+
+    // 1) Direct parse (works for many formats)
+    let d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+
+    // 2) "YYYY-MM-DD H:MM:SS" / "YYYY-MM-DD HH:MM:SS" / "YYYY-MM-DD H:MM"
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (m) {
+      const yy = Number(m[1]);
+      const mo = Number(m[2]) - 1;
+      const da = Number(m[3]);
+      const hh = Number(m[4]);
+      const mi = Number(m[5]);
+      const ss = Number(m[6] || 0);
+      const d2 = new Date(yy, mo, da, hh, mi, ss);
       return isNaN(d2.getTime()) ? null : d2;
+    }
+
+    // 3) Excel/Sheets sometimes sends Date(YYYY,MM,DD,HH,MM,SS) as a string
+    const m3 = s.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})(?:,(\d{1,2}),(\d{1,2}),(\d{1,2}))?\)$/);
+    if (m3){
+      const yy = Number(m3[1]);
+      const mo = Number(m3[2]); // already 0-based in Date(...)
+      const da = Number(m3[3]);
+      const hh = Number(m3[4] || 0);
+      const mi = Number(m3[5] || 0);
+      const ss = Number(m3[6] || 0);
+      const d3 = new Date(yy, mo, da, hh, mi, ss);
+      return isNaN(d3.getTime()) ? null : d3;
+    }
+
+    return null;
+  }
+
+  function setStatus(ok, msg){
+    $("statusText").textContent = msg;
+    $("statusDot").className = "dot " + (ok ? "g" : "r");
+  }
+  function showError(msg){
+    const el = $("errorBox");
+    el.style.display = "block";
+    el.textContent = msg;
+    setStatus(false, "Load failed");
+  }
+  function clearError(){
+    const el = $("errorBox");
+    el.style.display = "none";
+    el.textContent = "";
+  }
+
+  function normalizeHeader(h){
+    return String(h || "").trim().toLowerCase().replace(/\s+/g, "_");
+  }
+
+  // =========================
+  // Google Sheet fetch (GViz)
+  // =========================
+  async function fetchSheetGViz(){
+    const url = `https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/gviz/tq?gid=${CONFIG.gid}&tqx=out:json`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Cannot load sheet (HTTP ${res.status}). Make sure sharing is public.`);
+
+    const text = await res.text();
+    const jsonStr = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
+    const data = JSON.parse(jsonStr);
+
+    const cols = data.table.cols.map(c => (c.label || "").trim());
+    const rows = data.table.rows.map(r => r.c.map(cell => cell ? (cell.v ?? "") : ""));
+    return { cols, rows };
+  }
+
+  function toTrades(cols, rows){
+    const H = cols.map(normalizeHeader);
+
+    const pickIndex = (...names) => {
+      for (const n of names){
+        const i = H.indexOf(n);
+        if (i >= 0) return i;
+      }
+      return -1;
     };
 
-    function setStatus(ok, msg){
-      $("statusText").textContent = msg;
-      $("statusDot").className = "dot " + (ok ? "g" : "r");
-    }
-    function showError(msg){
-      const el = $("errorBox");
-      el.style.display = "block";
-      el.textContent = msg;
-      setStatus(false, "Load failed");
-    }
-    function clearError(){
-      const el = $("errorBox");
-      el.style.display = "none";
-      el.textContent = "";
-    }
+    // ✅ Your sheet headers (from screenshot):
+    // ticket, opening_time_ut, closing_time_ut, type, lots, symbol, opening_price, closing_price, commission_usd, swap_usd, profit_usd, close_reason
+    const iTicket = pickIndex("ticket");
+    const iOpenT  = pickIndex("opening_time_utc", "opening_time_ut", "open_time_utc", "open_time");
+    const iCloseT = pickIndex("closing_time_utc", "closing_time_ut", "close_time_utc", "close_time");
+    const iType   = pickIndex("type");
+    const iLots   = pickIndex("lots");
+    const iSymbol = pickIndex("symbol");
+    const iOpenP  = pickIndex("opening_price", "open_price");
+    const iCloseP = pickIndex("closing_price", "close_price");
+    const iProfit = pickIndex("profit_usd", "profit", "pnl", "net_profit");
+    const iComm   = pickIndex("commission_usd", "commission");
+    const iSwap   = pickIndex("swap_usd", "swap");
+    const iReason = pickIndex("close_reason", "reason");
 
-    // =========================
-    // Load from Google Sheet (GViz)
-    // =========================
-    async function fetchSheetGViz(){
-      // GViz JSON endpoint
-      const url = `https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/gviz/tq?gid=${CONFIG.gid}&tqx=out:json`;
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const text = await res.text();
-
-      // The response is like: google.visualization.Query.setResponse({...});
-      const jsonStr = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
-      const data = JSON.parse(jsonStr);
-
-      const cols = data.table.cols.map(c => (c.label || "").trim());
-      const rows = data.table.rows.map(r => r.c.map(cell => cell ? (cell.v ?? "") : ""));
-
-      return { cols, rows };
+    const required = [
+      ["ticket", iTicket],
+      ["opening_time_(utc/ut)", iOpenT],
+      ["closing_time_(utc/ut)", iCloseT],
+      ["type", iType],
+      ["lots", iLots],
+      ["symbol", iSymbol],
+      ["opening_price", iOpenP],
+      ["closing_price", iCloseP],
+      ["profit_usd", iProfit],
+    ];
+    const missing = required.filter(([,i])=>i===-1).map(([n])=>n);
+    if (missing.length){
+      throw new Error(
+        `Missing required columns: ${missing.join(", ")}. ` +
+        `Please verify the header row in Google Sheets.`
+      );
     }
 
-    function normalizeHeader(h){
-      return String(h || "").trim().toLowerCase().replace(/\s+/g, "_");
+    const trades = [];
+    for (const r of rows){
+      const openTime = parseDate(r[iOpenT]);
+      const closeTime = parseDate(r[iCloseT]);
+      if (!openTime || !closeTime) continue;
+
+      const profit = Number(r[iProfit] || 0);
+      const commission = (iComm>=0) ? Number(r[iComm] || 0) : 0;
+      const swap = (iSwap>=0) ? Number(r[iSwap] || 0) : 0;
+
+      // ✅ Total P&L used everywhere
+      const total = profit + swap + commission;
+
+      const holdMin = Math.max(0, (closeTime - openTime) / 60000);
+
+      trades.push({
+        ticket: String(r[iTicket] ?? ""),
+        openTime,
+        closeTime,
+        openDate: toDateOnly(openTime),
+        closeDate: toDateOnly(closeTime),
+        type: String(r[iType] ?? "").toLowerCase(),
+        lots: Number(r[iLots] || 0),
+        symbol: String(r[iSymbol] ?? ""),
+        openPrice: Number(r[iOpenP] || 0),
+        closePrice: Number(r[iCloseP] || 0),
+        profit: total,
+        reason: (iReason>=0) ? String(r[iReason] ?? "") : "",
+        holdMin
+      });
     }
 
-    function toTrades(cols, rows){
-      const H = cols.map(normalizeHeader);
+    trades.sort((a,b)=>a.closeTime-b.closeTime);
+    return trades;
+  }
 
-      const idx = (name) => H.indexOf(name);
-      const need = ["ticket","opening_time_utc","closing_time_utc","type","lots","symbol","opening_price","closing_price","profit_usd"];
-      const missing = need.filter(n => idx(n) === -1);
-      if (missing.length){
+  // =========================
+  // Metrics
+  // =========================
+  function computeMetrics(trades){
+    const n = trades.length;
+    const pnl = trades.reduce((s,t)=>s+t.profit,0);
+    const wins = trades.filter(t=>t.profit>0);
+    const losses = trades.filter(t=>t.profit<0);
+    const winRate = n ? (wins.length / n) : 0;
+
+    const grossProfit = wins.reduce((s,t)=>s+t.profit,0);
+    const grossLossAbs = Math.abs(losses.reduce((s,t)=>s+t.profit,0));
+    const profitFactor = grossLossAbs === 0 ? (grossProfit>0 ? Infinity : 0) : (grossProfit / grossLossAbs);
+
+    const avgWin = wins.length ? grossProfit / wins.length : 0;
+    const avgLoss = losses.length ? (losses.reduce((s,t)=>s+t.profit,0) / losses.length) : 0; // negative
+    const expectancy = (winRate * avgWin) + ((1-winRate) * avgLoss);
+
+    let cum=0, peak=0, maxDD=0;
+    for (const t of trades){
+      cum += t.profit;
+      peak = Math.max(peak, cum);
+      maxDD = Math.min(maxDD, cum - peak);
+    }
+
+    const avgHold = n ? trades.reduce((s,t)=>s+t.holdMin,0)/n : 0;
+
+    return { n, pnl, winRate, profitFactor, avgWin, avgLoss, expectancy, grossProfit, grossLossAbs, maxDD, avgHold };
+  }
+
+  function dailyPnl(trades, groupBy="close"){
+    const map = new Map();
+    for (const t of trades){
+      const key = (groupBy==="open") ? t.openDate : t.closeDate;
+      const cur = map.get(key) || { pnl:0, trades:0 };
+      cur.pnl += t.profit;
+      cur.trades += 1;
+      map.set(key, cur);
+    }
+    return map;
+  }
+
+  // =========================
+  // UI State
+  // =========================
+  let ALL_TRADES = [];
+  let FILTERED = [];
+  let equityChart = null;
+
+  let calMonth = null;         // Date first day of month
+  let calSelectedDate = null;  // "YYYY-MM-DD"
+
+  function populateSymbolDropdown(trades){
+    const syms = Array.from(new Set(trades.map(t=>t.symbol))).sort();
+    const sel = $("fSymbol");
+    sel.innerHTML = "";
+    const optAll = document.createElement("option");
+    optAll.value = "ALL";
+    optAll.textContent = "All";
+    sel.appendChild(optAll);
+
+    for (const s of syms){
+      const o = document.createElement("option");
+      o.value = s;
+      o.textContent = s;
+      sel.appendChild(o);
+    }
+  }
+
+  function setDefaultDates(trades){
+    if (!trades.length) return;
+    const minD = trades[0].closeDate;
+    const maxD = trades[trades.length-1].closeDate;
+    $("fStart").value = minD;
+    $("fEnd").value = maxD;
+
+    const last = trades[trades.length-1].closeTime;
+    calMonth = new Date(last.getFullYear(), last.getMonth(), 1);
+  }
+
+  function applyFilters(){
+    const start = $("fStart").value ? new Date($("fStart").value + "T00:00:00") : null;
+    const end = $("fEnd").value ? new Date($("fEnd").value + "T23:59:59") : null;
+    const sym = $("fSymbol").value;
+    const side = $("fSide").value;
+    const q = $("fSearch").value.trim().toLowerCase();
+
+    FILTERED = ALL_TRADES.filter(t=>{
+      if (start && t.closeTime < start) return false;
+      if (end && t.closeTime > end) return false;
+      if (sym !== "ALL" && t.symbol !== sym) return false;
+      if (side !== "ALL" && t.type !== side) return false;
+      if (q){
+        const hay = `${t.ticket} ${t.symbol} ${t.type} ${t.reason}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    if (calSelectedDate){
+      FILTERED = FILTERED.filter(t => t.closeDate === calSelectedDate);
+    }
+
+    renderAll();
+  }
+
+  function renderKPIs(){
+    const m = computeMetrics(FILTERED);
+    const start = $("fStart").value || "—";
+    const end = $("fEnd").value || "—";
+    $("rangeLabel").textContent = calSelectedDate
+      ? `Range: ${start} → ${end} | Day: ${calSelectedDate}`
+      : `Range: ${start} → ${end}`;
+
+    const kpis = [
+      { label:"Net P&L", value: fmtMoney(m.pnl), cls: m.pnl>=0 ? "pos":"neg", hint:`${m.n} trades` },
+      { label:"Win rate", value: (m.winRate*100).toFixed(1) + "%", cls:"", hint:`Wins ${FILTERED.filter(t=>t.profit>0).length} / Losses ${FILTERED.filter(t=>t.profit<0).length}` },
+      { label:"Profit factor", value: (m.profitFactor===Infinity ? "∞" : m.profitFactor.toFixed(2)), cls:"", hint:`Gross profit ${fmtMoney(m.grossProfit)} / Gross loss ${fmtMoney(m.grossLossAbs)}` },
+      { label:"Max drawdown", value: fmtMoney(m.maxDD), cls:"neg", hint:"From cumulative P&L" },
+      { label:"Average win", value: fmtMoney(m.avgWin), cls:"pos", hint:"Mean of winning trades" },
+      { label:"Average loss", value: fmtMoney(m.avgLoss), cls:"neg", hint:"Mean of losing trades" },
+      { label:"Expectancy", value: fmtMoney(m.expectancy), cls: m.expectancy>=0 ? "pos":"neg", hint:"Expected P&L per trade" },
+      { label:"Avg hold time", value: `${m.avgHold.toFixed(1)} min`, cls:"", hint:"Close time - Open time" },
+    ];
+
+    const grid = $("kpiGrid");
+    grid.innerHTML = "";
+    for (const k of kpis){
+      const div = document.createElement("div");
+      div.className = "kpi";
+      div.innerHTML = `
+        <div class="label">${k.label}</div>
+        <div class="value ${k.cls}">${k.value}</div>
+        <div class="hint">${k.hint}</div>
+      `;
+      grid.appendChild(div);
+    }
+  }
+
+  function renderEquityChart(){
+    // Category x-axis: labels are close dates (YYYY-MM-DD)
+    const sorted = [...FILTERED].sort((a,b)=>a.closeTime-b.closeTime);
+    let cum = 0;
+    const labels = [];
+    const values = [];
+    for (const t of sorted){
+      cum += t.profit;
+      labels.push(t.closeDate);
+      values.push(cum);
+    }
+
+    const ctx = $("equityChart").getContext("2d");
+    if (equityChart) equityChart.destroy();
+
+    equityChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "Cumulative P&L",
+          data: values,
+          tension: 0.25,
+          pointRadius: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: { color: "#9fb0c7", maxTicksLimit: 8 },
+            grid: { color: "rgba(255,255,255,.06)" }
+          },
+          y: {
+            ticks: { color: "#9fb0c7" },
+            grid: { color: "rgba(255,255,255,.06)" }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: "#e7edf7" } },
+          tooltip: { callbacks: { label: (c)=> ` ${fmtMoney(c.parsed.y)}` } }
+        }
+      }
+    });
+  }
+
+  function renderTable(){
+    const tbody = $("tradeTable").querySelector("tbody");
+    tbody.innerHTML = "";
+
+    const rows = [...FILTERED].sort((a,b)=>b.closeTime-a.closeTime);
+    for (const t of rows){
+      const tr = document.createElement("tr");
+      const pnlCls = t.profit>=0 ? "pos":"neg";
+      tr.innerHTML = `
+        <td>${t.closeDate}</td>
+        <td>${t.ticket}</td>
+        <td>${t.symbol}</td>
+        <td><span class="tag ${t.type}">${t.type.toUpperCase()}</span></td>
+        <td class="right">${fmtNum(t.lots, 2)}</td>
+        <td class="right">${fmtNum(t.openPrice, 3)}</td>
+        <td class="right">${fmtNum(t.closePrice, 3)}</td>
+        <td class="right ${pnlCls}">${fmtMoney(t.profit)}</td>
+        <td class="right">${t.holdMin.toFixed(1)}</td>
+        <td>${t.reason || "<span class='muted'>—</span>"}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    const m = computeMetrics(FILTERED);
+    $("tableFoot").innerHTML = `Showing <b>${rows.length}</b> trades | Net P&amp;L: <b class="${m.pnl>=0?"pos":"neg"}">${fmtMoney(m.pnl)}</b>`;
+  }
+
+  function renderCalendar(){
+    const groupBy = $("fGroupBy").value;
+    const dMap = dailyPnl(FILTERED, groupBy);
+
+    // DOW row
+    const dow = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    const dowWrap = $("calDow");
+    dowWrap.innerHTML = "";
+    for (const d of dow){
+      const el = document.createElement("div");
+      el.className = "dow";
+      el.textContent = d;
+      dowWrap.appendChild(el);
+    }
+
+    if (!calMonth){
+      const now = new Date();
+      calMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+
+    const y = calMonth.getFullYear();
+    const m = calMonth.getMonth();
+    $("calTitle").textContent = calMonth.toLocaleString("en-US", { month:"long", year:"numeric" });
+
+    // Calendar grid start on Monday
+    const first = new Date(y, m, 1);
+    const last = new Date(y, m+1, 0);
+    const firstDow = (first.getDay()+6)%7; // Mon=0
+    const daysInMonth = last.getDate();
+
+    const grid = $("calGrid");
+    grid.innerHTML = "";
+
+    const totalCells = Math.ceil((firstDow + daysInMonth)/7)*7;
+    for (let cell=0; cell<totalCells; cell++){
+      const dayNum = cell - firstDow + 1;
+      const box = document.createElement("div");
+      box.className = "day";
+
+      if (dayNum < 1 || dayNum > daysInMonth){
+        box.classList.add("disabled");
+        box.innerHTML = `<div class="dnum">—</div>`;
+        grid.appendChild(box);
+        continue;
+      }
+
+      const date = new Date(y, m, dayNum);
+      const key = toDateOnly(date);
+      const rec = dMap.get(key);
+      const pnl = rec ? rec.pnl : 0;
+      const trCount = rec ? rec.trades : 0;
+
+      if (trCount === 0) box.classList.add("neutral");
+      else if (pnl >= 0) box.classList.add("good");
+      else box.classList.add("bad");
+
+      if (calSelectedDate === key) box.classList.add("selected");
+
+      box.innerHTML = `
+        <div class="dnum">${dayNum}</div>
+        <div class="pnl ${pnl>=0?"pos":"neg"}">${trCount ? fmtMoney(pnl) : "$0.00"}</div>
+        <div class="trades">${trCount} ${trCount===1 ? "trade":"trades"}</div>
+      `;
+
+      box.addEventListener("click", ()=>{
+        calSelectedDate = (calSelectedDate === key) ? null : key;
+        $("calHint").textContent = calSelectedDate ? `Day filter active: ${calSelectedDate}` : "";
+        applyFilters();
+      });
+
+      grid.appendChild(box);
+    }
+  }
+
+  function renderAll(){
+    renderKPIs();
+    renderEquityChart();
+    renderCalendar();
+    renderTable();
+  }
+
+  // =========================
+  // Table sorting
+  // =========================
+  let sortKey = "closeDate";
+  let sortDir = "desc";
+  function attachSortHandlers(){
+    const ths = $("tradeTable").querySelectorAll("thead th");
+    ths.forEach(th=>{
+      th.addEventListener("click", ()=>{
+        const k = th.dataset.k;
+        if (!k) return;
+        if (sortKey === k) sortDir = (sortDir==="asc" ? "desc" : "asc");
+        else { sortKey = k; sortDir = "desc"; }
+
+        const sign = sortDir==="asc" ? 1 : -1;
+        const cmp = (a,b)=>{
+          const va = a[k], vb = b[k];
+          if (va==null && vb==null) return 0;
+          if (va==null) return -1*sign;
+          if (vb==null) return 1*sign;
+          if (va instanceof Date && vb instanceof Date) return (va - vb)*sign;
+          if (typeof va === "number" && typeof vb === "number") return (va - vb)*sign;
+          return String(va).localeCompare(String(vb))*sign;
+        };
+
+        const tbody = $("tradeTable").querySelector("tbody");
+        tbody.innerHTML = "";
+        const rows = [...FILTERED].sort(cmp);
+        for (const t of rows){
+          const tr = document.createElement("tr");
+          const pnlCls = t.profit>=0 ? "pos":"neg";
+          tr.innerHTML = `
+            <td>${t.closeDate}</td>
+            <td>${t.ticket}</td>
+            <td>${t.symbol}</td>
+            <td><span class="tag ${t.type}">${t.type.toUpperCase()}</span></td>
+            <td class="right">${fmtNum(t.lots, 2)}</td>
+            <td class="right">${fmtNum(t.openPrice, 3)}</td>
+            <td class="right">${fmtNum(t.closePrice, 3)}</td>
+            <td class="right ${pnlCls}">${fmtMoney(t.profit)}</td>
+            <td class="right">${t.holdMin.toFixed(1)}</td>
+            <td>${t.reason || "<span class='muted'>—</span>"}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+        $("tableFoot").innerHTML = `Showing <b>${rows.length}</b> trades | Sorted by <b>${k}</b> (${sortDir})`;
+      });
+    });
+  }
+
+  // =========================
+  // Quick range buttons
+  // =========================
+  function setRangeThisMonth(){
+    const now = new Date();
+    const s = new Date(now.getFullYear(), now.getMonth(), 1);
+    const e = new Date(now.getFullYear(), now.getMonth()+1, 0);
+    $("fStart").value = toDateOnly(s);
+    $("fEnd").value = toDateOnly(e);
+    calMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    calSelectedDate = null;
+    $("calHint").textContent = "";
+    applyFilters();
+  }
+
+  function setRangeYTD(){
+    const now = new Date();
+    const s = new Date(now.getFullYear(), 0, 1);
+    $("fStart").value = toDateOnly(s);
+    $("fEnd").value = toDateOnly(now);
+    calMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    calSelectedDate = null;
+    $("calHint").textContent = "";
+    applyFilters();
+  }
+
+  function clearFilters(){
+    if (!ALL_TRADES.length) return;
+    calSelectedDate = null;
+    $("calHint").textContent = "";
+    setDefaultDates(ALL_TRADES);
+    $("fSymbol").value = "ALL";
+    $("fSide").value = "ALL";
+    $("fSearch").value = "";
+    $("fGroupBy").value = "close";
+    applyFilters();
+  }
+
+  // =========================
+  // Main load
+  // =========================
+  async function load(){
+    clearError();
+    setStatus(true, "Loading...");
+    $("loadedInfo").textContent = "";
+
+    try{
+      const { cols, rows } = await fetchSheetGViz();
+      ALL_TRADES = toTrades(cols, rows);
+
+      if (!ALL_TRADES.length){
         throw new Error(
-          `Missing required columns: ${missing.join(", ")}. ` +
-          `Please rename your sheet headers to match: ` +
-          `ticket, opening_time_utc, closing_time_utc, type, lots, symbol, opening_price, closing_price, profit_usd (plus optional commission_usd, swap_usd, close_reason).`
+          "No trades found. This usually happens if date/time columns cannot be parsed. " +
+          "Your sheet uses 'YYYY-MM-DD H:MM:SS' and this file already supports it — " +
+          "so please double-check the gid points to the correct tab and the header row is row 1."
         );
       }
 
-      const iTicket = idx("ticket");
-      const iOpenT = idx("opening_time_utc");
-      const iCloseT = idx("closing_time_utc");
-      const iType = idx("type");
-      const iLots = idx("lots");
-      const iSymbol = idx("symbol");
-      const iOpenP = idx("opening_price");
-      const iCloseP = idx("closing_price");
-      const iProfit = idx("profit_usd");
-      const iComm = idx("commission_usd");
-      const iSwap = idx("swap_usd");
-      const iReason = idx("close_reason");
-
-      const trades = [];
-      for (const r of rows){
-        const openTime = parseDate(r[iOpenT]);
-        const closeTime = parseDate(r[iCloseT]);
-        if (!openTime || !closeTime) continue;
-
-        const profit = Number(r[iProfit] || 0);
-        const commission = iComm>=0 ? Number(r[iComm] || 0) : 0;
-        const swap = iSwap>=0 ? Number(r[iSwap] || 0) : 0;
-
-        // Total P&L used in dashboard (profit + swap + commission) -> adjust if your export differs
-        const total = profit + swap + commission;
-
-        const holdMin = Math.max(0, (closeTime - openTime) / 60000);
-
-        trades.push({
-          ticket: String(r[iTicket] ?? ""),
-          openTime,
-          closeTime,
-          openDate: toDateOnly(openTime),
-          closeDate: toDateOnly(closeTime),
-          type: String(r[iType] ?? "").toLowerCase(),
-          lots: Number(r[iLots] || 0),
-          symbol: String(r[iSymbol] ?? ""),
-          openPrice: Number(r[iOpenP] || 0),
-          closePrice: Number(r[iCloseP] || 0),
-          profit: total,
-          reason: iReason>=0 ? String(r[iReason] ?? "") : "",
-          holdMin
-        });
-      }
-
-      // Sort by close time ascending (for equity curve)
-      trades.sort((a,b)=>a.closeTime-b.closeTime);
-      return trades;
-    }
-
-    // =========================
-    // Metrics
-    // =========================
-    function computeMetrics(trades){
-      const n = trades.length;
-      const pnl = trades.reduce((s,t)=>s+t.profit,0);
-      const wins = trades.filter(t=>t.profit>0);
-      const losses = trades.filter(t=>t.profit<0);
-      const winRate = n ? (wins.length / n) : 0;
-
-      const grossProfit = wins.reduce((s,t)=>s+t.profit,0);
-      const grossLossAbs = Math.abs(losses.reduce((s,t)=>s+t.profit,0));
-      const profitFactor = grossLossAbs === 0 ? (grossProfit>0 ? Infinity : 0) : (grossProfit / grossLossAbs);
-
-      const avgWin = wins.length ? grossProfit / wins.length : 0;
-      const avgLoss = losses.length ? (losses.reduce((s,t)=>s+t.profit,0) / losses.length) : 0; // negative
-      const expectancy = (winRate * avgWin) + ((1-winRate) * avgLoss);
-
-      // Max drawdown from cumulative P&L
-      let cum=0, peak=0, maxDD=0;
-      for (const t of trades){
-        cum += t.profit;
-        peak = Math.max(peak, cum);
-        maxDD = Math.min(maxDD, cum - peak); // negative
-      }
-
-      const avgHold = n ? trades.reduce((s,t)=>s+t.holdMin,0)/n : 0;
-
-      return {
-        n, pnl, winRate, profitFactor, avgWin, avgLoss, expectancy,
-        grossProfit, grossLossAbs,
-        maxDD, avgHold
-      };
-    }
-
-    function buildEquitySeries(trades){
-      let cum=0;
-      return trades.map(t=>{
-        cum += t.profit;
-        return { x: t.closeTime, y: cum };
-      });
-    }
-
-    function dailyPnl(trades, groupBy="close"){
-      const map = new Map(); // date -> {pnl, trades}
-      for (const t of trades){
-        const key = (groupBy==="open") ? t.openDate : t.closeDate;
-        const cur = map.get(key) || { pnl:0, trades:0 };
-        cur.pnl += t.profit;
-        cur.trades += 1;
-        map.set(key, cur);
-      }
-      return map;
-    }
-
-    // =========================
-    // UI Rendering
-    // =========================
-    let ALL_TRADES = [];
-    let FILTERED = [];
-    let equityChart = null;
-
-    let calMonth = null; // Date set to first day of month
-    let calSelectedDate = null; // "YYYY-MM-DD"
-
-    function setDefaultDates(trades){
-      if (!trades.length) return;
-      const minD = trades[0].closeDate;
-      const maxD = trades[trades.length-1].closeDate;
-      $("fStart").value = minD;
-      $("fEnd").value = maxD;
-
-      // calendar month to last trade month
-      const last = trades[trades.length-1].closeTime;
-      calMonth = new Date(last.getFullYear(), last.getMonth(), 1);
-    }
-
-    function populateSymbolDropdown(trades){
-      const syms = Array.from(new Set(trades.map(t=>t.symbol))).sort();
-      const sel = $("fSymbol");
-      sel.innerHTML = "";
-      const optAll = document.createElement("option");
-      optAll.value = "ALL";
-      optAll.textContent = "All";
-      sel.appendChild(optAll);
-
-      for (const s of syms){
-        const o = document.createElement("option");
-        o.value = s;
-        o.textContent = s;
-        sel.appendChild(o);
-      }
-    }
-
-    function applyFilters(){
-      const start = $("fStart").value ? new Date($("fStart").value + "T00:00:00") : null;
-      const end = $("fEnd").value ? new Date($("fEnd").value + "T23:59:59") : null;
-      const sym = $("fSymbol").value;
-      const side = $("fSide").value;
-      const q = $("fSearch").value.trim().toLowerCase();
-
-      FILTERED = ALL_TRADES.filter(t=>{
-        if (start && t.closeTime < start) return false;
-        if (end && t.closeTime > end) return false;
-        if (sym !== "ALL" && t.symbol !== sym) return false;
-        if (side !== "ALL" && t.type !== side) return false;
-        if (q){
-          const hay = `${t.ticket} ${t.symbol} ${t.type} ${t.reason}`.toLowerCase();
-          if (!hay.includes(q)) return false;
-        }
-        return true;
-      });
-
-      // If a calendar date was clicked, constrain further
-      if (calSelectedDate){
-        FILTERED = FILTERED.filter(t => t.closeDate === calSelectedDate);
-      }
-
-      renderAll();
-    }
-
-    function renderKPIs(){
-      const m = computeMetrics(FILTERED);
-      const start = $("fStart").value || "—";
-      const end = $("fEnd").value || "—";
-      $("rangeLabel").textContent = calSelectedDate ? `Range: ${start} → ${end} | Day: ${calSelectedDate}` : `Range: ${start} → ${end}`;
-
-      const kpis = [
-        { label:"Net P&L", value: fmtMoney(m.pnl), cls: m.pnl>=0 ? "pos":"neg", hint:`${m.n} trades` },
-        { label:"Win rate", value: (m.winRate*100).toFixed(1) + "%", cls:"", hint:`Wins ${FILTERED.filter(t=>t.profit>0).length} / Losses ${FILTERED.filter(t=>t.profit<0).length}` },
-        { label:"Profit factor", value: (m.profitFactor===Infinity ? "∞" : m.profitFactor.toFixed(2)), cls:"", hint:`Gross profit ${fmtMoney(m.grossProfit)} / Gross loss ${fmtMoney(m.grossLossAbs)}` },
-        { label:"Max drawdown", value: fmtMoney(m.maxDD), cls:"neg", hint:"From cumulative P&L" },
-
-        { label:"Average win", value: fmtMoney(m.avgWin), cls:"pos", hint:"Mean of winning trades" },
-        { label:"Average loss", value: fmtMoney(m.avgLoss), cls:"neg", hint:"Mean of losing trades" },
-        { label:"Expectancy", value: fmtMoney(m.expectancy), cls: m.expectancy>=0 ? "pos":"neg", hint:"Expected P&L per trade" },
-        { label:"Avg hold time", value: `${m.avgHold.toFixed(1)} min`, cls:"", hint:"Close time - Open time" },
-      ];
-
-      const grid = $("kpiGrid");
-      grid.innerHTML = "";
-      for (const k of kpis){
-        const div = document.createElement("div");
-        div.className = "kpi";
-        div.innerHTML = `
-          <div class="label">${k.label}</div>
-          <div class="value ${k.cls}">${k.value}</div>
-          <div class="hint">${k.hint}</div>
-        `;
-        grid.appendChild(div);
-      }
-    }
-
-    function renderEquityChart(){
-      const series = buildEquitySeries(FILTERED);
-      const ctx = $("equityChart").getContext("2d");
-
-      if (equityChart) equityChart.destroy();
-
-      equityChart = new Chart(ctx, {
-        type: "line",
-        data: {
-          datasets: [{
-            label: "Cumulative P&L",
-            data: series,
-            parsing: { xAxisKey: "x", yAxisKey: "y" },
-            tension: 0.25,
-            pointRadius: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              type: "time",
-              time: { unit: "day" },
-              ticks: { color: "#9fb0c7" },
-              grid: { color: "rgba(255,255,255,.06)" }
-            },
-            y: {
-              ticks: { color: "#9fb0c7" },
-              grid: { color: "rgba(255,255,255,.06)" }
-            }
-          },
-          plugins: {
-            legend: { labels: { color: "#e7edf7" } },
-            tooltip: {
-              callbacks: {
-                label: (ctx)=> ` ${fmtMoney(ctx.parsed.y)}`
-              }
-            }
-          }
-        }
-      });
-    }
-
-    function renderTable(){
-      const tbody = $("tradeTable").querySelector("tbody");
-      tbody.innerHTML = "";
-
-      // show newest first in table
-      const rows = [...FILTERED].sort((a,b)=>b.closeTime-a.closeTime);
-
-      for (const t of rows){
-        const tr = document.createElement("tr");
-        const pnlCls = t.profit>=0 ? "pos":"neg";
-        tr.innerHTML = `
-          <td>${t.closeDate}</td>
-          <td>${t.ticket}</td>
-          <td>${t.symbol}</td>
-          <td><span class="tag ${t.type}">${t.type.toUpperCase()}</span></td>
-          <td class="right">${fmtNum(t.lots, 2)}</td>
-          <td class="right">${fmtNum(t.openPrice, 3)}</td>
-          <td class="right">${fmtNum(t.closePrice, 3)}</td>
-          <td class="right ${pnlCls}">${fmtMoney(t.profit)}</td>
-          <td class="right">${t.holdMin.toFixed(1)}</td>
-          <td>${t.reason || "<span class='muted'>—</span>"}</td>
-        `;
-        tbody.appendChild(tr);
-      }
-
-      const m = computeMetrics(FILTERED);
-      $("tableFoot").innerHTML = `Showing <b>${rows.length}</b> trades | Net P&L: <b class="${m.pnl>=0?"pos":"neg"}">${fmtMoney(m.pnl)}</b>`;
-    }
-
-    function renderCalendar(){
-      const groupBy = $("fGroupBy").value;
-      const dMap = dailyPnl(FILTERED, groupBy);
-
-      // DOW row
-      const dow = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-      const dowWrap = $("calDow");
-      dowWrap.innerHTML = "";
-      for (const d of dow){
-        const el = document.createElement("div");
-        el.className = "dow";
-        el.textContent = d;
-        dowWrap.appendChild(el);
-      }
-
-      if (!calMonth){
-        calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-      }
-
-      const y = calMonth.getFullYear();
-      const m = calMonth.getMonth();
-      $("calTitle").textContent = calMonth.toLocaleString("en-US", { month:"long", year:"numeric" });
-
-      // Calendar grid start on Monday
-      const first = new Date(y, m, 1);
-      const last = new Date(y, m+1, 0);
-      const firstDow = (first.getDay()+6)%7; // Mon=0
-      const daysInMonth = last.getDate();
-
-      const grid = $("calGrid");
-      grid.innerHTML = "";
-
-      const totalCells = Math.ceil((firstDow + daysInMonth)/7)*7;
-
-      for (let cell=0; cell<totalCells; cell++){
-        const dayNum = cell - firstDow + 1;
-        const box = document.createElement("div");
-        box.className = "day";
-
-        if (dayNum < 1 || dayNum > daysInMonth){
-          box.classList.add("disabled");
-          box.innerHTML = `<div class="dnum">—</div>`;
-          grid.appendChild(box);
-          continue;
-        }
-
-        const date = new Date(y, m, dayNum);
-        const key = toDateOnly(date);
-        const rec = dMap.get(key);
-        const pnl = rec ? rec.pnl : 0;
-        const trCount = rec ? rec.trades : 0;
-
-        // Color class
-        if (trCount === 0) box.classList.add("neutral");
-        else if (pnl >= 0) box.classList.add("good");
-        else box.classList.add("bad");
-
-        if (calSelectedDate === key) box.classList.add("selected");
-
-        box.innerHTML = `
-          <div class="dnum">${dayNum}</div>
-          <div class="pnl ${pnl>=0?"pos":"neg"}">${trCount ? fmtMoney(pnl) : "$0.00"}</div>
-          <div class="trades">${trCount} ${trCount===1 ? "trade":"trades"}</div>
-        `;
-
-        box.addEventListener("click", ()=>{
-          // Toggle day filter
-          calSelectedDate = (calSelectedDate === key) ? null : key;
-          $("calHint").textContent = calSelectedDate ? `Day filter active: ${calSelectedDate}` : "";
-          applyFilters();
-        });
-
-        grid.appendChild(box);
-      }
-    }
-
-    function renderAll(){
-      renderKPIs();
-      renderEquityChart();
-      renderCalendar();
-      renderTable();
-    }
-
-    // =========================
-    // Sorting table
-    // =========================
-    let sortKey = "closeDate";
-    let sortDir = "desc";
-    function attachSortHandlers(){
-      const ths = $("tradeTable").querySelectorAll("thead th");
-      ths.forEach(th=>{
-        th.addEventListener("click", ()=>{
-          const k = th.dataset.k;
-          if (!k) return;
-          if (sortKey === k) sortDir = (sortDir==="asc" ? "desc" : "asc");
-          else { sortKey = k; sortDir = "desc"; }
-
-          // Sort FILTERED for table only (do not alter base order for equity curve)
-          const sign = sortDir==="asc" ? 1 : -1;
-          const cmp = (a,b)=>{
-            const va = a[k], vb = b[k];
-            if (va==null && vb==null) return 0;
-            if (va==null) return -1*sign;
-            if (vb==null) return 1*sign;
-            if (va instanceof Date && vb instanceof Date) return (va - vb)*sign;
-            if (typeof va === "number" && typeof vb === "number") return (va - vb)*sign;
-            return String(va).localeCompare(String(vb))*sign;
-          };
-          // Render table with sorted rows without mutating FILTERED:
-          const tbody = $("tradeTable").querySelector("tbody");
-          tbody.innerHTML = "";
-          const rows = [...FILTERED].sort(cmp);
-          for (const t of rows){
-            const tr = document.createElement("tr");
-            const pnlCls = t.profit>=0 ? "pos":"neg";
-            tr.innerHTML = `
-              <td>${t.closeDate}</td>
-              <td>${t.ticket}</td>
-              <td>${t.symbol}</td>
-              <td><span class="tag ${t.type}">${t.type.toUpperCase()}</span></td>
-              <td class="right">${fmtNum(t.lots, 2)}</td>
-              <td class="right">${fmtNum(t.openPrice, 3)}</td>
-              <td class="right">${fmtNum(t.closePrice, 3)}</td>
-              <td class="right ${pnlCls}">${fmtMoney(t.profit)}</td>
-              <td class="right">${t.holdMin.toFixed(1)}</td>
-              <td>${t.reason || "<span class='muted'>—</span>"}</td>
-            `;
-            tbody.appendChild(tr);
-          }
-          $("tableFoot").innerHTML = `Showing <b>${rows.length}</b> trades | Sorted by <b>${k}</b> (${sortDir})`;
-        });
-      });
-    }
-
-    // =========================
-    // Quick range buttons
-    // =========================
-    function setRangeThisMonth(){
-      const now = new Date();
-      const s = new Date(now.getFullYear(), now.getMonth(), 1);
-      const e = new Date(now.getFullYear(), now.getMonth()+1, 0);
-      $("fStart").value = toDateOnly(s);
-      $("fEnd").value = toDateOnly(e);
-      calMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      calSelectedDate = null;
-      $("calHint").textContent = "";
-      applyFilters();
-    }
-    function setRangeYTD(){
-      const now = new Date();
-      const s = new Date(now.getFullYear(), 0, 1);
-      $("fStart").value = toDateOnly(s);
-      $("fEnd").value = toDateOnly(now);
-      calMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      calSelectedDate = null;
-      $("calHint").textContent = "";
-      applyFilters();
-    }
-    function clearFilters(){
-      if (!ALL_TRADES.length) return;
-      calSelectedDate = null;
-      $("calHint").textContent = "";
+      populateSymbolDropdown(ALL_TRADES);
       setDefaultDates(ALL_TRADES);
-      $("fSymbol").value = "ALL";
-      $("fSide").value = "ALL";
-      $("fSearch").value = "";
-      $("fGroupBy").value = "close";
+
+      $("loadedInfo").textContent = `Loaded ${ALL_TRADES.length} trades`;
+      setStatus(true, "Loaded");
+
       applyFilters();
+    }catch(err){
+      showError(err.message || String(err));
     }
+  }
 
-    // =========================
-    // Main load
-    // =========================
-    async function load(){
-      clearError();
-      setStatus(true, "Loading...");
-      $("loadedInfo").textContent = "";
-      try{
-        const { cols, rows } = await fetchSheetGViz();
-        ALL_TRADES = toTrades(cols, rows);
+  // =========================
+  // Events
+  // =========================
+  $("btnReload").addEventListener("click", load);
+  $("btnThisMonth").addEventListener("click", setRangeThisMonth);
+  $("btnYTD").addEventListener("click", setRangeYTD);
+  $("btnClear").addEventListener("click", clearFilters);
 
-        if (!ALL_TRADES.length) throw new Error("No trades found. Check the sheet data range and headers.");
-
-        populateSymbolDropdown(ALL_TRADES);
-        setDefaultDates(ALL_TRADES);
-        $("loadedInfo").textContent = `Loaded ${ALL_TRADES.length} trades`;
-        setStatus(true, "Loaded");
-
-        applyFilters();
-      }catch(err){
-        showError(err.message || String(err));
-      }
-    }
-
-    // =========================
-    // Events
-    // =========================
-    $("btnReload").addEventListener("click", load);
-    $("btnThisMonth").addEventListener("click", setRangeThisMonth);
-    $("btnYTD").addEventListener("click", setRangeYTD);
-    $("btnClear").addEventListener("click", clearFilters);
-
-    ["fStart","fEnd","fSymbol","fSide","fGroupBy"].forEach(id=>{
-      $(id).addEventListener("change", ()=>{
-        calSelectedDate = null;
-        $("calHint").textContent = "";
-        applyFilters();
-      });
-    });
-    $("fSearch").addEventListener("input", ()=>{
+  ["fStart","fEnd","fSymbol","fSide","fGroupBy"].forEach(id=>{
+    $(id).addEventListener("change", ()=>{
       calSelectedDate = null;
       $("calHint").textContent = "";
       applyFilters();
     });
+  });
+  $("fSearch").addEventListener("input", ()=>{
+    calSelectedDate = null;
+    $("calHint").textContent = "";
+    applyFilters();
+  });
 
-    $("calPrev").addEventListener("click", ()=>{
-      if (!calMonth) return;
-      calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1);
-      renderCalendar();
-    });
-    $("calNext").addEventListener("click", ()=>{
-      if (!calMonth) return;
-      calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1);
-      renderCalendar();
-    });
+  $("calPrev").addEventListener("click", ()=>{
+    if (!calMonth) return;
+    calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1);
+    renderCalendar();
+  });
+  $("calNext").addEventListener("click", ()=>{
+    if (!calMonth) return;
+    calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1);
+    renderCalendar();
+  });
 
-    // Attach sort handlers once
-    attachSortHandlers();
-
-    // Auto load on start
-    load();
-  </script>
+  attachSortHandlers();
+  load();
+</script>
 </body>
 </html>
