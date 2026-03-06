@@ -180,6 +180,7 @@
     .muted{color:var(--muted)}
     .foot{color:var(--muted);font-size:12px;margin-top:10px;line-height:1.5}
 
+    /* Calendar */
     .calHead{
       display:flex;
       align-items:center;
@@ -195,9 +196,18 @@
       min-width:0;
     }
 
+    .calNavBtn{
+      width:48px;
+      height:48px;
+      min-width:48px;
+      padding:0;
+      border-radius:14px;
+      font-size:18px;
+    }
+
     .calGrid{
       display:grid;
-      grid-template-columns:repeat(7, 1fr);
+      grid-template-columns:repeat(7, minmax(0,1fr));
       gap:10px;
     }
 
@@ -213,25 +223,36 @@
       border-radius:14px;
       border:1px solid var(--border);
       background:rgba(0,0,0,.18);
-      padding:10px;
-      min-height:84px;
+      padding:10px 8px;
+      min-height:96px;
       position:relative;
       overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
     }
 
-    .day .dnum{font-size:12px;color:var(--muted)}
+    .day .dnum{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1;
+    }
+
     .day .pnl{
       margin-top:8px;
       font-size:16px;
       font-weight:800;
-      line-height:1.2;
-      word-break:break-word;
+      line-height:1.15;
+      word-break:normal;
+      overflow-wrap:normal;
+      white-space:normal;
     }
+
     .day .trades{
-      margin-top:4px;
+      margin-top:5px;
       color:rgba(255,255,255,.85);
       font-size:12px;
-      line-height:1.3;
+      line-height:1.2;
     }
 
     .day.good{background:rgba(59,214,113,.18);border-color:rgba(59,214,113,.35)}
@@ -256,7 +277,7 @@
       padding:8px 10px;
       border-radius:999px;
       color:var(--muted);
-      font-size:12px
+      font-size:12px;
     }
 
     .tableWrap{
@@ -322,24 +343,42 @@
       .kpis{grid-template-columns:repeat(2,1fr)}
     }
 
+    @media (max-width: 768px){
+      .calGrid{gap:6px}
+      .dow{font-size:10px;letter-spacing:.04em}
+      .day{
+        min-height:78px;
+        padding:8px 6px;
+        border-radius:12px;
+      }
+      .day .dnum{font-size:11px}
+      .day .pnl{
+        margin-top:6px;
+        font-size:13px;
+        line-height:1.1;
+      }
+      .day .trades{
+        margin-top:4px;
+        font-size:10px;
+      }
+      .calNavBtn{
+        width:42px;
+        height:42px;
+        min-width:42px;
+        border-radius:12px;
+        font-size:16px;
+      }
+    }
+
     @media (max-width: 640px){
       .wrap{
         margin:14px auto;
         padding:0 10px 20px;
       }
 
-      header{
-        margin-bottom:12px;
-      }
-
-      h1{
-        font-size:20px;
-      }
-
-      .sub{
-        font-size:12px;
-      }
-
+      header{margin-bottom:12px}
+      h1{font-size:20px}
+      .sub{font-size:12px}
       .card{
         padding:12px;
         border-radius:14px;
@@ -356,9 +395,7 @@
         gap:8px;
       }
 
-      .row .btn{
-        width:100%;
-      }
+      .row .btn{width:100%}
 
       .kpis{
         grid-template-columns:1fr 1fr;
@@ -370,74 +407,66 @@
         min-height:74px;
       }
 
-      .kpi .value{
-        font-size:16px;
-      }
+      .kpi .value{font-size:16px}
 
-      .calGrid{
-        gap:6px;
-      }
-
-      .dow{
-        font-size:10px;
-      }
-
-      .day{
-        min-height:72px;
-        padding:8px;
-        border-radius:12px;
-      }
-
-      .day .dnum{
-        font-size:11px;
-      }
-
-      .day .pnl{
-        margin-top:6px;
-        font-size:13px;
-      }
-
-      .day .trades{
-        font-size:10px;
-        margin-top:3px;
-      }
-
-      .legend{
-        gap:8px;
-      }
-
+      .legend{gap:8px}
       .chip{
         font-size:11px;
         padding:7px 9px;
       }
     }
 
+    @media (max-width: 480px){
+      .calGrid{gap:4px}
+      .dow{font-size:9px}
+      .day{
+        min-height:62px;
+        padding:6px 5px;
+        border-radius:10px;
+      }
+      .day .dnum{font-size:10px}
+      .day .pnl{
+        margin-top:5px;
+        font-size:11px;
+        line-height:1.05;
+        font-weight:800;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .day .trades{
+        margin-top:3px;
+        font-size:9px;
+        line-height:1;
+        color:rgba(255,255,255,.78);
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .calTitle{font-size:15px}
+      .calNavBtn{
+        width:38px;
+        height:38px;
+        min-width:38px;
+        font-size:14px;
+        border-radius:10px;
+      }
+      .legend{gap:6px}
+      .chip{
+        font-size:10px;
+        padding:6px 8px;
+      }
+    }
+
     @media (max-width: 420px){
-      .row{
-        grid-template-columns:1fr;
-      }
-
-      .kpis{
-        grid-template-columns:1fr;
-      }
-
+      .row{grid-template-columns:1fr}
+      .kpis{grid-template-columns:1fr}
       .day{
         min-height:64px;
         padding:6px;
       }
-
-      .day .pnl{
-        font-size:12px;
-      }
-
-      .day .trades{
-        font-size:9px;
-      }
-
-      .calHead .btn{
-        padding:10px 12px;
-        min-width:44px;
-      }
+      .day .pnl{font-size:12px}
+      .day .trades{font-size:9px}
     }
   </style>
 </head>
@@ -532,9 +561,9 @@
       </h2>
 
       <div class="calHead">
-        <button class="btn" id="calPrev">◀</button>
+        <button class="btn calNavBtn" id="calPrev">◀</button>
         <div class="calTitle" id="calTitle">—</div>
-        <button class="btn" id="calNext">▶</button>
+        <button class="btn calNavBtn" id="calNext">▶</button>
       </div>
 
       <div class="calGrid" id="calDow"></div>
@@ -789,6 +818,8 @@
   let equityChart = null;
   let calMonth = null;
   let calSelectedDate = null;
+  let sortKey = "closeDate";
+  let sortDir = "desc";
 
   function populateSymbolDropdown(trades){
     const syms = Array.from(new Set(trades.map(t=>t.symbol))).sort();
@@ -848,6 +879,7 @@
     const m = computeMetrics(FILTERED);
     const start = $("fStart").value || "—";
     const end = $("fEnd").value || "—";
+
     $("rangeLabel").textContent = calSelectedDate
       ? `Range: ${start} → ${end} | Day: ${calSelectedDate}`
       : `Range: ${start} → ${end}`;
@@ -945,7 +977,17 @@
     const tbody = $("tradeTable").querySelector("tbody");
     tbody.innerHTML = "";
 
-    const rows = [...FILTERED].sort((a,b)=>b.closeTime-a.closeTime);
+    const sign = sortDir==="asc" ? 1 : -1;
+    const rows = [...FILTERED].sort((a,b)=>{
+      const va = a[sortKey], vb = b[sortKey];
+      if (va==null && vb==null) return 0;
+      if (va==null) return -1*sign;
+      if (vb==null) return 1*sign;
+      if (va instanceof Date && vb instanceof Date) return (va - vb)*sign;
+      if (typeof va === "number" && typeof vb === "number") return (va - vb)*sign;
+      return String(va).localeCompare(String(vb))*sign;
+    });
+
     for (const t of rows){
       const tr = document.createElement("tr");
       const pnlCls = t.profit>=0 ? "pos":"neg";
@@ -971,8 +1013,12 @@
   function renderCalendar(){
     const groupBy = $("fGroupBy").value;
     const dMap = dailyPnl(FILTERED, groupBy);
+    const isMobile = window.innerWidth <= 480;
 
-    const dow = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    const dow = isMobile
+      ? ["M","T","W","T","F","S","S"]
+      : ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
     const dowWrap = $("calDow");
     dowWrap.innerHTML = "";
     for (const d of dow){
@@ -1024,10 +1070,18 @@
 
       if (calSelectedDate === key) box.classList.add("selected");
 
+      const pnlText = trCount === 0
+        ? "$0"
+        : (isMobile ? fmtMoney(pnl).replace(".00","") : fmtMoney(pnl));
+
+      const tradeText = isMobile
+        ? `${trCount}T`
+        : `${trCount} ${trCount===1 ? "trade":"trades"}`;
+
       box.innerHTML = `
         <div class="dnum">${dayNum}</div>
-        <div class="pnl ${pnl>=0?"pos":"neg"}">${trCount ? fmtMoney(pnl) : "$0.00"}</div>
-        <div class="trades">${trCount} ${trCount===1 ? "trade":"trades"}</div>
+        <div class="pnl ${pnl>=0?"pos":"neg"}">${pnlText}</div>
+        <div class="trades">${tradeText}</div>
       `;
 
       box.addEventListener("click", ()=>{
@@ -1047,9 +1101,6 @@
     renderTable();
   }
 
-  let sortKey = "closeDate";
-  let sortDir = "desc";
-
   function attachSortHandlers(){
     const ths = $("tradeTable").querySelectorAll("thead th");
     ths.forEach(th=>{
@@ -1058,41 +1109,12 @@
         if (!k) return;
 
         if (sortKey === k) sortDir = (sortDir==="asc" ? "desc" : "asc");
-        else { sortKey = k; sortDir = "desc"; }
-
-        const sign = sortDir==="asc" ? 1 : -1;
-        const cmp = (a,b)=>{
-          const va = a[k], vb = b[k];
-          if (va==null && vb==null) return 0;
-          if (va==null) return -1*sign;
-          if (vb==null) return 1*sign;
-          if (va instanceof Date && vb instanceof Date) return (va - vb)*sign;
-          if (typeof va === "number" && typeof vb === "number") return (va - vb)*sign;
-          return String(va).localeCompare(String(vb))*sign;
-        };
-
-        const tbody = $("tradeTable").querySelector("tbody");
-        tbody.innerHTML = "";
-        const rows = [...FILTERED].sort(cmp);
-        for (const t of rows){
-          const tr = document.createElement("tr");
-          const pnlCls = t.profit>=0 ? "pos":"neg";
-          tr.innerHTML = `
-            <td>${t.closeDate}</td>
-            <td>${t.ticket}</td>
-            <td>${t.symbol}</td>
-            <td><span class="tag ${t.type}">${t.type.toUpperCase()}</span></td>
-            <td class="right">${fmtNum(t.lots, 2)}</td>
-            <td class="right">${fmtNum(t.openPrice, 3)}</td>
-            <td class="right">${fmtNum(t.closePrice, 3)}</td>
-            <td class="right ${pnlCls}">${fmtMoney(t.profit)}</td>
-            <td class="right">${t.holdMin.toFixed(1)}</td>
-            <td>${t.reason || "<span class='muted'>—</span>"}</td>
-          `;
-          tbody.appendChild(tr);
+        else {
+          sortKey = k;
+          sortDir = "desc";
         }
 
-        $("tableFoot").innerHTML = `Showing <b>${rows.length}</b> trades | Sorted by <b>${k}</b> (${sortDir})`;
+        renderTable();
       });
     });
   }
@@ -1142,9 +1164,7 @@
       ALL_TRADES = toTrades(cols, rows);
 
       if (!ALL_TRADES.length){
-        throw new Error(
-          "No trades found. Please check the sheet tab, header row, and sharing settings."
-        );
+        throw new Error("No trades found. Please check the sheet tab, header row, and sharing settings.");
       }
 
       populateSymbolDropdown(ALL_TRADES);
@@ -1190,8 +1210,13 @@
     renderCalendar();
   });
 
+  let resizeTimer;
   window.addEventListener("resize", () => {
-    if (equityChart) renderEquityChart();
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      renderCalendar();
+      if (equityChart) renderEquityChart();
+    }, 120);
   });
 
   attachSortHandlers();
