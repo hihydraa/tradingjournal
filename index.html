@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover"
+  />
   <title>Trading Journal</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -29,10 +32,11 @@
         var(--bg);
       color:var(--text);
       -webkit-text-size-adjust:100%;
+      overflow-x:hidden;
     }
 
     .wrap{
-      max-width:1200px;
+      max-width:1280px;
       margin:24px auto;
       padding:0 16px 24px;
     }
@@ -77,12 +81,12 @@
     .dot.n{background:rgba(255,255,255,.35)}
 
     .grid{display:grid;gap:12px}
-    .g2{grid-template-columns:1.2fr .8fr}
+    .g2{grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr)}
 
     .card{
       background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
       border:1px solid var(--border);
-      border-radius:16px;
+      border-radius:18px;
       padding:14px;
       box-shadow:0 10px 30px rgba(0,0,0,.25);
       min-width:0;
@@ -102,7 +106,7 @@
 
     .controls{
       display:grid;
-      grid-template-columns:repeat(6, 1fr);
+      grid-template-columns:repeat(6, minmax(0,1fr));
       gap:10px;
     }
 
@@ -159,7 +163,7 @@
 
     .kpis{
       display:grid;
-      grid-template-columns:repeat(4,1fr);
+      grid-template-columns:repeat(4,minmax(0,1fr));
       gap:10px;
     }
 
@@ -169,11 +173,29 @@
       border-radius:14px;
       padding:12px;
       min-height:78px;
+      min-width:0;
     }
 
-    .kpi .label{color:var(--muted);font-size:12px;margin-bottom:6px;line-height:1.4}
-    .kpi .value{font-size:18px;font-weight:700;line-height:1.2;word-break:break-word}
-    .kpi .hint{color:var(--muted);font-size:11px;margin-top:6px;line-height:1.4}
+    .kpi .label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:6px;
+      line-height:1.4;
+    }
+
+    .kpi .value{
+      font-size:18px;
+      font-weight:700;
+      line-height:1.2;
+      word-break:break-word;
+    }
+
+    .kpi .hint{
+      color:var(--muted);
+      font-size:11px;
+      margin-top:6px;
+      line-height:1.4;
+    }
 
     .pos{color:var(--good)}
     .neg{color:var(--bad)}
@@ -194,6 +216,7 @@
       text-align:center;
       flex:1;
       min-width:0;
+      font-size:16px;
     }
 
     .calNavBtn{
@@ -208,7 +231,7 @@
     .calGrid{
       display:grid;
       grid-template-columns:repeat(7, minmax(0,1fr));
-      gap:10px;
+      gap:8px;
     }
 
     .dow{
@@ -217,6 +240,7 @@
       text-transform:uppercase;
       letter-spacing:.08em;
       text-align:center;
+      padding-bottom:2px;
     }
 
     .day{
@@ -224,12 +248,13 @@
       border:1px solid var(--border);
       background:rgba(0,0,0,.18);
       padding:10px 8px;
-      min-height:96px;
+      min-height:88px;
       position:relative;
       overflow:hidden;
       display:flex;
       flex-direction:column;
       justify-content:flex-start;
+      min-width:0;
     }
 
     .day .dnum{
@@ -240,12 +265,12 @@
 
     .day .pnl{
       margin-top:8px;
-      font-size:16px;
+      font-size:15px;
       font-weight:800;
       line-height:1.15;
-      word-break:normal;
-      overflow-wrap:normal;
-      white-space:normal;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .day .trades{
@@ -253,6 +278,9 @@
       color:rgba(255,255,255,.85);
       font-size:12px;
       line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .day.good{background:rgba(59,214,113,.18);border-color:rgba(59,214,113,.35)}
@@ -278,19 +306,23 @@
       border-radius:999px;
       color:var(--muted);
       font-size:12px;
+      line-height:1;
     }
 
+    /* Table */
     .tableWrap{
       max-height:520px;
       overflow:auto;
       border:1px solid var(--border);
       border-radius:14px;
       -webkit-overflow-scrolling:touch;
+      scrollbar-gutter: stable both-edges;
+      width:100%;
     }
 
     table{
-      width:100%;
-      min-width:900px;
+      width:max-content;
+      min-width:100%;
       border-collapse:separate;
       border-spacing:0;
     }
@@ -337,24 +369,25 @@
     .tag.sell{border-color:rgba(255,77,94,.35);background:rgba(255,77,94,.10);color:#ffe1e4}
     .right{text-align:right}
 
-    @media (max-width: 1000px){
+    @media (max-width: 1100px){
       .g2{grid-template-columns:1fr}
-      .controls{grid-template-columns:repeat(2, 1fr)}
-      .kpis{grid-template-columns:repeat(2,1fr)}
+      .controls{grid-template-columns:repeat(3, minmax(0,1fr))}
+      .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
 
     @media (max-width: 768px){
+      .controls{grid-template-columns:repeat(2, minmax(0,1fr))}
       .calGrid{gap:6px}
       .dow{font-size:10px;letter-spacing:.04em}
       .day{
-        min-height:78px;
+        min-height:72px;
         padding:8px 6px;
         border-radius:12px;
       }
       .day .dnum{font-size:11px}
       .day .pnl{
         margin-top:6px;
-        font-size:13px;
+        font-size:12px;
         line-height:1.1;
       }
       .day .trades{
@@ -419,31 +452,37 @@
     @media (max-width: 480px){
       .calGrid{gap:4px}
       .dow{font-size:9px}
+
       .day{
-        min-height:62px;
-        padding:6px 5px;
+        min-height:58px;
+        padding:6px 4px;
         border-radius:10px;
       }
+
       .day .dnum{font-size:10px}
+
       .day .pnl{
         margin-top:5px;
-        font-size:11px;
+        font-size:10px;
         line-height:1.05;
         font-weight:800;
         white-space:nowrap;
         overflow:hidden;
         text-overflow:ellipsis;
       }
+
       .day .trades{
         margin-top:3px;
-        font-size:9px;
+        font-size:8px;
         line-height:1;
         color:rgba(255,255,255,.78);
         white-space:nowrap;
         overflow:hidden;
         text-overflow:ellipsis;
       }
+
       .calTitle{font-size:15px}
+
       .calNavBtn{
         width:38px;
         height:38px;
@@ -451,22 +490,29 @@
         font-size:14px;
         border-radius:10px;
       }
+
       .legend{gap:6px}
       .chip{
         font-size:10px;
         padding:6px 8px;
+      }
+
+      .tableWrap{
+        max-height:420px;
       }
     }
 
     @media (max-width: 420px){
       .row{grid-template-columns:1fr}
       .kpis{grid-template-columns:1fr}
+
       .day{
-        min-height:64px;
-        padding:6px;
+        min-height:54px;
+        padding:5px 4px;
       }
-      .day .pnl{font-size:12px}
-      .day .trades{font-size:9px}
+
+      .day .pnl{font-size:9px}
+      .day .trades{font-size:8px}
     }
   </style>
 </head>
@@ -579,21 +625,21 @@
 
     <div class="card">
       <h2>Trade Log</h2>
-      <div class="tableWrap">
+      <div class="tableWrap" id="tradeTableWrap">
         <table id="tradeTable">
           <thead>
-          <tr>
-            <th data-k="closeDate">Close</th>
-            <th data-k="ticket">Ticket</th>
-            <th data-k="symbol">Symbol</th>
-            <th data-k="type">Side</th>
-            <th data-k="lots" class="right">Lots</th>
-            <th data-k="openPrice" class="right">Open</th>
-            <th data-k="closePrice" class="right">Close</th>
-            <th data-k="profit" class="right">P&amp;L (USD)</th>
-            <th data-k="holdMin" class="right">Hold (min)</th>
-            <th data-k="reason">Reason</th>
-          </tr>
+            <tr>
+              <th data-k="closeDate">Close</th>
+              <th data-k="ticket">Ticket</th>
+              <th data-k="symbol">Symbol</th>
+              <th data-k="type">Side</th>
+              <th data-k="lots" class="right">Lots</th>
+              <th data-k="openPrice" class="right">Open</th>
+              <th data-k="closePrice" class="right">Close</th>
+              <th data-k="profit" class="right">P&amp;L (USD)</th>
+              <th data-k="holdMin" class="right">Hold (min)</th>
+              <th data-k="reason">Reason</th>
+            </tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -617,6 +663,16 @@
     const sign = n < 0 ? "-" : "";
     const abs = Math.abs(n);
     return `${sign}$${abs.toFixed(2)}`;
+  };
+
+  const fmtMoneyShort = (v) => {
+    const n = Number(v || 0);
+    const sign = n < 0 ? "-" : "";
+    const abs = Math.abs(n);
+    if (abs >= 1000) return `${sign}$${Math.round(abs).toLocaleString("en-US")}`;
+    if (abs >= 100) return `${sign}$${abs.toFixed(0)}`;
+    if (abs >= 10) return `${sign}$${abs.toFixed(1)}`;
+    return `${sign}$${abs.toFixed(0)}`;
   };
 
   const fmtNum = (v, d=2) => Number(v || 0).toFixed(d);
@@ -881,7 +937,7 @@
     const end = $("fEnd").value || "—";
 
     $("rangeLabel").textContent = calSelectedDate
-      ? `Range: ${start} → ${end} | Day: ${calSelectedDate}`
+      ? `Day filter active: ${calSelectedDate}`
       : `Range: ${start} → ${end}`;
 
     const kpis = [
@@ -973,12 +1029,9 @@
     });
   }
 
-  function renderTable(){
-    const tbody = $("tradeTable").querySelector("tbody");
-    tbody.innerHTML = "";
-
+  function getSortedRowsForTable(){
     const sign = sortDir==="asc" ? 1 : -1;
-    const rows = [...FILTERED].sort((a,b)=>{
+    return [...FILTERED].sort((a,b)=>{
       const va = a[sortKey], vb = b[sortKey];
       if (va==null && vb==null) return 0;
       if (va==null) return -1*sign;
@@ -987,6 +1040,13 @@
       if (typeof va === "number" && typeof vb === "number") return (va - vb)*sign;
       return String(va).localeCompare(String(vb))*sign;
     });
+  }
+
+  function renderTable(){
+    const tbody = $("tradeTable").querySelector("tbody");
+    tbody.innerHTML = "";
+
+    const rows = getSortedRowsForTable();
 
     for (const t of rows){
       const tr = document.createElement("tr");
@@ -1046,6 +1106,7 @@
     grid.innerHTML = "";
 
     const totalCells = Math.ceil((firstDow + daysInMonth)/7)*7;
+
     for (let cell=0; cell<totalCells; cell++){
       const dayNum = cell - firstDow + 1;
       const box = document.createElement("div");
@@ -1072,7 +1133,7 @@
 
       const pnlText = trCount === 0
         ? "$0"
-        : (isMobile ? fmtMoney(pnl).replace(".00","") : fmtMoney(pnl));
+        : (isMobile ? fmtMoneyShort(pnl) : fmtMoney(pnl));
 
       const tradeText = isMobile
         ? `${trCount}T`
@@ -1080,8 +1141,8 @@
 
       box.innerHTML = `
         <div class="dnum">${dayNum}</div>
-        <div class="pnl ${pnl>=0?"pos":"neg"}">${pnlText}</div>
-        <div class="trades">${tradeText}</div>
+        <div class="pnl ${pnl>=0?"pos":"neg"}" title="${fmtMoney(pnl)}">${pnlText}</div>
+        <div class="trades" title="${tradeText}">${tradeText}</div>
       `;
 
       box.addEventListener("click", ()=>{
